@@ -1,10 +1,24 @@
 controllers:
     resource: ../src/Controller/
     type: annotation
-
+api_client:
+  resource: ../src/Controller/Api/Client
+  type: annotation
+  prefix: /client
+api_Fournisseur:
+  resource: ../src/Controller/Api/Fournisseur
+  type: annotation
+  prefix: /fournisseur
+backoffice_controllers:
+  resource: ../src/Controller/BackOffice
+  type: annotation
+  prefix: /
 kernel:
     resource: ../src/Kernel.php
     type: annotation
 
 api_login_check:
     path: /api/login_check
+api_login:
+  path: /api/login
+  controller: App\Controller\Api\AuthentificationController::login

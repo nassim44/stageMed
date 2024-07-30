@@ -7,7 +7,6 @@
         "php": ">=8.0.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "api-platform/core": "^2.7",
         "doctrine/annotations": "^2.0",
         "doctrine/doctrine-bundle": "^2.12",
         "doctrine/doctrine-migrations-bundle": "^3.3",
@@ -24,6 +23,8 @@
         "symfony/flex": "^2",
         "symfony/form": "6.0.*",
         "symfony/framework-bundle": "6.0.*",
+        "symfony/google-mailer": "6.0.*",
+        "symfony/mailer": "6.0.*",
         "symfony/monolog-bundle": "^3.10",
         "symfony/property-access": "6.0.*",
         "symfony/property-info": "6.0.*",
@@ -32,10 +33,15 @@
         "symfony/serializer": "6.0.*",
         "symfony/twig-bundle": "6.0.*",
         "symfony/validator": "6.0.*",
-        "symfony/yaml": "6.0.*"
+        "symfony/webpack-encore-bundle": "^1.17",
+        "symfony/yaml": "6.0.*",
+        "vich/uploader-bundle": "^2.2"
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.50"
+        "symfony/maker-bundle": "^1.50",
+        "symfony/stopwatch": "6.0.*",
+        "symfony/web-profiler-bundle": "6.0.*",
+        "vimeo/psalm": "^5.25"
     },
     "config": {
         "allow-plugins": {

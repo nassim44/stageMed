@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -63,6 +64,46 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getOneOrNullResult();
     }
+    
+    public function findByRole(): array
+    {
+        $rsm = new ResultSetMappingBuilder($this->getEntityManager());
+        $rsm->addRootEntityFromClassMetadata(User::class, 'u');
+    
+        $rawQuery = sprintf(
+            'SELECT %s
+            FROM user u 
+            WHERE JSON_CONTAINS(u.roles, :role, "$") = 1',
+            $rsm->generateSelectClause()
+        );
+    
+        $query = $this->getEntityManager()->createNativeQuery($rawQuery, $rsm);
+        $query->setParameter('role', json_encode('ROLE_FOURNISSEUR')); 
+    
+        return $query->getResult();
+    }
+    public function findFornissorAccount(): array
+    {
+        $rsm = new ResultSetMappingBuilder($this->getEntityManager());
+        $rsm->addRootEntityFromClassMetadata(User::class, 'u');
+
+        $rawQuery = sprintf(
+            'SELECT %s
+        FROM user u 
+        WHERE JSON_CONTAINS(u.roles, :role, "$") = 1
+        AND u.verification_token != :accept
+        AND u.verification_token != :rejected',
+            $rsm->generateSelectClause()
+        );
+
+        $query = $this->getEntityManager()->createNativeQuery($rawQuery, $rsm);
+        $query->setParameter('role', json_encode('ROLE_FOURNISSEUR'));
+        $query->setParameter('accept', 'accepted');
+        $query->setParameter('rejected', 'rejected');
+
+        return $query->getResult();
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */
