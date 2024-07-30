@@ -3,14 +3,24 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use phpDocumentor\Reflection\Types\Boolean;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+/**
+ * @ORM\Entity
+ * @Vich\Uploadable
+ */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -24,7 +34,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups("users")]
     private ?string $email = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'json')]
     #[Assert\NotBlank]
     #[Groups("users")]
     private array $roles = [];
@@ -51,15 +61,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeInterface $DateOfBirth = null;
 
     #[ORM\Column]
-    #[Assert\NotNull]
     #[Groups("users")]
     private ?bool $Status = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank]
     #[Groups("users")]
     private ?int $Tel = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $VerificationToken = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups("users")]
+    private ?string $profileImage = null;
+
+     /**
+     * @Vich\UploadableField(mapping="images", fileNameProperty="profileImage")
+     * @var File|null
+     */
+    private ?File $imageFile = null;
+
+    #[ORM\OneToMany(mappedBy: 'productCreator', targetEntity: Product::class)]
+    private Collection $products;
+
+    #[ORM\ManyToMany(targetEntity: Product::class, inversedBy: 'users')]
+    private Collection $WhishList;
+
+    public function __construct()
+    {
+        $this->products = new ArrayCollection();
+        $this->WhishList = new ArrayCollection();
+    }
     public function getId(): ?int
     {
         return $this->id;
@@ -93,9 +125,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
         return array_unique($roles);
     }
 
@@ -186,6 +215,93 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setTel(int $Tel): static
     {
         $this->Tel = $Tel;
+
+        return $this;
+    }
+
+    public function getVerificationToken(): ?string
+    {
+        return $this->VerificationToken;
+    }
+
+    public function setVerificationToken(string $VerificationToken): static
+    {
+        $this->VerificationToken = $VerificationToken;
+
+        return $this;
+    }
+
+    public function getProfileImage(): ?string
+    {
+        return $this->profileImage;
+    }
+
+    public function setProfileImage(string $profileImage): static
+    {
+        $this->profileImage = $profileImage;
+
+        return $this;
+    }
+    public function setImageFile(?File $imageFile = null): void
+    {
+        $this->imageFile = $imageFile;
+    }
+
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getProducts(): Collection
+    {
+        return $this->products;
+    }
+
+    public function addProduct(Product $product): static
+    {
+        if (!$this->products->contains($product)) {
+            $this->products->add($product);
+            $product->setProductCreator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProduct(Product $product): static
+    {
+        if ($this->products->removeElement($product)) {
+            // set the owning side to null (unless already changed)
+            if ($product->getProductCreator() === $this) {
+                $product->setProductCreator(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getWhishList(): Collection
+    {
+        return $this->WhishList;
+    }
+
+    public function addWhishList(Product $whishList): static
+    {
+        if (!$this->WhishList->contains($whishList)) {
+            $this->WhishList->add($whishList);
+        }
+
+        return $this;
+    }
+
+    public function removeWhishList(Product $whishList): static
+    {
+        $this->WhishList->removeElement($whishList);
 
         return $this;
     }
