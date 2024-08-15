@@ -15,19 +15,19 @@ class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups("products")]
+    #[Groups(["users", "products"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups("products")]
+    #[Groups(["users", "products"])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups("products")]
+    #[Groups(["users", "products"])]
     private ?string $description = null;
 
     #[ORM\Column]
-    #[Groups("products")]
+    #[Groups(["users", "products"])]
     private ?float $prix = null;
 
     #[ORM\Column]
@@ -43,10 +43,11 @@ class Product
     private ?Category $category = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups("products")]
+    #[Groups(["users", "products"])]
     private ?string $productImage = null;
 
     #[ORM\ManyToOne(inversedBy: 'products')]
+    #[Groups("products")]
     private ?User $productCreator = null;
 
     #[ORM\Column(length: 255)]
@@ -57,15 +58,15 @@ class Product
     #[Groups("products")]
     private ?string $Brand = null;
 
-    #[ORM\Column]
-    private ?int $serialNumber = null;
+    #[ORM\Column(nullable: true)]
+    private ?array $serialNumber = null;
 
     #[ORM\Column(length: 255)]
     #[Groups("products")]
     private ?string $shippingMethod = null;
 
     #[ORM\Column]
-    #[Groups("products")]
+    #[Groups(["users", "products"])]
     private ?float $shippingCost = null;
 
     #[ORM\Column(length: 255)]
@@ -77,11 +78,33 @@ class Product
     private ?array $shippingRegions = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'WhishList')]
+    #[Groups("products")]
+    #[ORM\JoinTable(name: "user_wishlist_products")]
     private Collection $users;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups("products")]
+    private ?array $Features = null;
+
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Rate::class)]
+    private Collection $rates;
+
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'LikedProduct')]
+    #[ORM\JoinTable(name: "user_liked_products")]
+    private Collection $LikedUsers;
+
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Inventory::class)]
+    #[Groups("users")]
+    private Collection $Inventories;
+
+
 
     public function __construct()
     {
         $this->users = new ArrayCollection();
+        $this->rates = new ArrayCollection();
+        $this->LikedUsers = new ArrayCollection();
+        $this->Inventories = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -209,12 +232,12 @@ class Product
         return $this;
     }
 
-    public function getSerialNumber(): ?int
+    public function getSerialNumber(): ?array
     {
         return $this->serialNumber;
     }
 
-    public function setSerialNumber(int $serialNumber): static
+    public function setSerialNumber(array $serialNumber): static
     {
         $this->serialNumber = $serialNumber;
 
@@ -296,6 +319,104 @@ class Product
         return $this;
     }
 
+    public function getFeatures(): ?array
+    {
+        return $this->Features;
+    }
+
+    public function setFeatures(?array $Features): static
+    {
+        $this->Features = $Features;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Rate>
+     */
+    public function getRates(): Collection
+    {
+        return $this->rates;
+    }
+
+    public function addRate(Rate $rate): static
+    {
+        if (!$this->rates->contains($rate)) {
+            $this->rates->add($rate);
+            $rate->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRate(Rate $rate): static
+    {
+        if ($this->rates->removeElement($rate)) {
+            // set the owning side to null (unless already changed)
+            if ($rate->getProduct() === $this) {
+                $rate->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getLikedUsers(): Collection
+    {
+        return $this->LikedUsers;
+    }
+
+    public function addLikedUser(User $likedUser): static
+    {
+        if (!$this->LikedUsers->contains($likedUser)) {
+            $this->LikedUsers->add($likedUser);
+            $likedUser->addLikedProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLikedUser(User $likedUser): static
+    {
+        if ($this->LikedUsers->removeElement($likedUser)) {
+            $likedUser->removeLikedProduct($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Inventory>
+     */
+    public function getInventories(): Collection
+    {
+        return $this->Inventories;
+    }
+
+    public function addInventory(Inventory $inventory): static
+    {
+        if (!$this->Inventories->contains($inventory)) {
+            $this->Inventories->add($inventory);
+            $inventory->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInventory(Inventory $inventory): static
+    {
+        if ($this->Inventories->removeElement($inventory)) {
+            // set the owning side to null (unless already changed)
+            if ($inventory->getProduct() === $this) {
+                $inventory->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
 
 
 }

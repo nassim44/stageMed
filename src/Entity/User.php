@@ -26,7 +26,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups("users")]
+    #[Groups(["users","products"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
@@ -36,7 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'json')]
     #[Assert\NotBlank]
-    #[Groups("users")]
+    #[Groups(["users","rates"])]
     private array $roles = [];
 
     /**
@@ -49,12 +49,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
-    #[Groups("users")]
+    #[Groups(["users","rates"])]
     private ?string $LastName = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
-    #[Groups("users")]
+    #[Groups(["users","rates"])]
     private ?string $FirstName = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
@@ -72,7 +72,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $VerificationToken = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups("users")]
+    #[Groups(["users","rates"])]
     private ?string $profileImage = null;
 
      /**
@@ -85,12 +85,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $products;
 
     #[ORM\ManyToMany(targetEntity: Product::class, inversedBy: 'users')]
+    #[Groups("users")]
+    #[ORM\JoinTable(name: "user_wishlist_products")]
     private Collection $WhishList;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Rate::class)]
+    private Collection $rates;
+
+    #[ORM\ManyToMany(targetEntity: Product::class, inversedBy: 'LikedUsers')]
+    #[ORM\JoinTable(name: "user_liked_products")]
+    #[Groups(["users"])]
+    private Collection $LikedProduct;
 
     public function __construct()
     {
         $this->products = new ArrayCollection();
         $this->WhishList = new ArrayCollection();
+        $this->rates = new ArrayCollection();
+        $this->LikedProduct = new ArrayCollection();
     }
     public function getId(): ?int
     {
@@ -302,6 +314,60 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeWhishList(Product $whishList): static
     {
         $this->WhishList->removeElement($whishList);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Rate>
+     */
+    public function getRates(): Collection
+    {
+        return $this->rates;
+    }
+
+    public function addRate(Rate $rate): static
+    {
+        if (!$this->rates->contains($rate)) {
+            $this->rates->add($rate);
+            $rate->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRate(Rate $rate): static
+    {
+        if ($this->rates->removeElement($rate)) {
+            // set the owning side to null (unless already changed)
+            if ($rate->getUser() === $this) {
+                $rate->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getLikedProduct(): Collection
+    {
+        return $this->LikedProduct;
+    }
+
+    public function addLikedProduct(Product $likedProduct): static
+    {
+        if (!$this->LikedProduct->contains($likedProduct)) {
+            $this->LikedProduct->add($likedProduct);
+        }
+
+        return $this;
+    }
+
+    public function removeLikedProduct(Product $likedProduct): static
+    {
+        $this->LikedProduct->removeElement($likedProduct);
 
         return $this;
     }

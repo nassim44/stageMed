@@ -33,4 +33,15 @@ class ProductController extends AbstractController
     {
         return $this->productService->getProductByID($id);
     }
+    #[Route('/whishlist/{idUser}/{idProduct}', name: 'whishList',methods: ['POST'])]
+    public function addToWhishList(int $idUser, int $idProduct): Response
+    {
+        return $this->productService->addToWhishList($idUser,$idProduct);
+    }
+        #[Route('/removefromwhishlist/{idUser}/{idProduct}', name: 'whishListRemove',methods: ['POST'])]
+    public function removeFromWhishList(int $idUser, int $idProduct): Response
+    {
+        return $this->productService->removeFromWhishList($idUser,$idProduct);
+    }
+
 }

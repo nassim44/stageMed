@@ -1,10 +1,6 @@
 controllers:
     resource: ../src/Controller/
     type: annotation
-api_client:
-  resource: ../src/Controller/Api/Client
-  type: annotation
-  prefix: /client
 api_Fournisseur:
   resource: ../src/Controller/Api/Fournisseur
   type: annotation
