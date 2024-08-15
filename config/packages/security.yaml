@@ -43,9 +43,11 @@ security:
             provider: app_user_provider  # Replace with your actual user provider
 
     access_control:
+        - { path: ^/fournisseur/inventory, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/fournisseur, roles: ROLE_FOURNISSEUR }
         - { path: ^/client, roles: ROLE_USER }
+
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     #access_control:

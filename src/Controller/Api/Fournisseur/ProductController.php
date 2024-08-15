@@ -24,4 +24,9 @@ class ProductController extends AbstractController
     {
         return  $this->productService->new($request);
     }
+    #[Route('/product/ownSerial/new', name: 'app_product_own', methods: ['GET', 'POST'])]
+    public function newSerial(Request $request): Response
+    {
+        return  $this->productService->newOwnSerial($request);
+    }
 }

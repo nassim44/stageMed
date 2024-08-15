@@ -35,7 +35,7 @@ class UserAuthenticator extends AbstractAuthenticator
         $token = str_replace('Bearer ', '', $request->headers->get('Authorization'));
         $decodedToken = $this->jwtEncoder->decode($token);
         return new SelfValidatingPassport(
-            new UserBadge($decodedToken['email']),
+            new UserBadge($decodedToken['username']),
         );
     }
 

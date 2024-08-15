@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Entity\Product;
 use App\Entity\User;
 use App\Form\User1Type;
 use App\Repository\UserRepository;
@@ -85,6 +86,33 @@ class UserService
         $user->setVerificationToken('REJECTED');
         $this->entityManager->getRepository(User::class)->save($user);
         return new Response('Fournisseur rejecte', Response::HTTP_OK);
-
+    }
+    public function likedProducts(int $userId,int $productId): Response
+    {
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $userId]);
+        $product = $this->entityManager->getRepository(Product::class)->findOneBy(['id' => $productId]);
+        try {
+            $user->addLikedProduct($product);
+            $product->addLikedUser($user);
+            $this->entityManager->getRepository(User::class)->save($user);
+            $this->entityManager->getRepository(Product::class)->save($product);
+            return new Response('success', Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new Response('An error occurred: ' . $e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    public function RemovelikedProducts(int $userId,int $productId): Response
+    {
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $userId]);
+        $product = $this->entityManager->getRepository(Product::class)->findOneBy(['id' => $productId]);
+        try {
+            $user->removeLikedProduct($product);
+            $product->removeLikedUser($user);
+            $this->entityManager->getRepository(User::class)->save($user);
+            $this->entityManager->getRepository(Product::class)->save($product);
+            return new Response('success', Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new Response('An error occurred: ' . $e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }
